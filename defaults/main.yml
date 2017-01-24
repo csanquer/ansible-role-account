@@ -123,6 +123,7 @@ skel_default_bash_aliases:
   dkm: docker-machine
   dkrmexit: "docker rm $(docker ps -qa --no-trunc --filter \"status=exited\")"
   dkrmorph: "docker rmi $(docker images --filter \"dangling=true\" -q --no-trunc)"
+  dkrmvol: "docker volume rm $(docker volume ls -q --filter \"dangling=true\")"
   du: "du -h"
   duf: "du -sk * | sort -n | perl -ne '\\''($s,$f)=split(m{\\t});for (qw(K M G)) {if($s<1024) {printf(\"%.1f\",$s);print \"$_\\t$f\"; last};$s=$s/1024}'\\''"
   dufr: "du -sk * | sort -nr | perl -ne '\\''($s,$f)=split(m{\\t});for (qw(K M G)) {if($s<1024) {printf(\"%.1f\",$s);print \"$_\\t$f\"; last};$s=$s/1024}'\\''"
