@@ -17,6 +17,17 @@
   with_subelements:
     - "{{ account_url_authorized_keys }}"
     - urls
+    - { skip_missing: True }
+
+- name: Set up SSH authorized_keys from files
+  authorized_key:
+    user: "{{ item.0.name }}"
+    key: "{{ lookup('file', item.1) }}"
+    state: present
+  with_subelements:
+    - "{{ account_url_authorized_keys }}"
+    - paths
+    - { skip_missing: True }
 
 - name: create ssh keys directory for keys to copy
   file:
