@@ -139,13 +139,10 @@ skel_default_bash_aliases:
   fromdosr: "find . -type f \\! -regex \".*\\.\\(jpg\\|ico\\|bmp\\|jpeg\\|png\\|svg\\|psd\\|swf\\|z\\|tar\\|zip\\|bz2\\|7z\\|gz\\|tgz\\|phar\\|jar\\)\" \\! -path \"*svn*\" \\! -path \"*.git/*\" -exec fromdos {} \\;"
   grep: "grep --color=auto"
   l: "ls -CF"
-  la: "ls -A"
-  lat: lsatree
-  lessvim: /usr/share/vim/vim73/macros/less.sh
+  la: "ls -lhAF"
   ll: "ls -lhaF"
   lr: "ll -R"
   ls: "ls --color=auto"
-  lt: lstree
   pip2upgrade: "sudo pip2 freeze --local | grep -v '\\''^\\-e'\\'' | cut -d = -f 1  | sudo xargs pip2 install -U"
   pip3upgrade: "sudo pip3 freeze --local | grep -v '\\''^\\-e'\\'' | cut -d = -f 1  | sudo xargs pip3 install -U"
   rmgit: "rm -rf `find . -type d -name .git`"
@@ -238,9 +235,8 @@ skel_gitconfig:
     # diff and log helpers
     staged: diff --cached
     dfc: diff --cached
-    lg: log --graph --decorate
-    lgp: log --graph --decorate --oneline
-    #lgp: log --graph --pretty=tformat:'%C(yellow)%h%Creset%C(auto)%d%Creset %s %C(blue)(%an)%Creset %Cgreen(%cd - %cr)%Creset' --abbrev-commit --date=local
+    lg: log --graph --decorate --oneline
+    lgp: log --graph --pretty=tformat:'%C(yellow)%h%Creset%C(auto)%d%Creset %s %C(blue)(%an)%Creset %Cgreen(%cd - %cr)%Creset' --abbrev-commit --date=local
     #lgp: log --graph --pretty=tformat:'%C(yellow)%h%Creset%C(yellow)%d%Creset %s %C(blue)(%an)%Creset %Cgreen(%cd - %cr)%Creset' --abbrev-commit --date=local
     last: log -1 HEAD
     tip: log -n 1 --abbrev-commit --decorate
