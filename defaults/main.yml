@@ -109,6 +109,8 @@ skel_templates:
   - { src: "etc/skel/{{ ansible_os_family|lower }}/.profile.j2", os_family: 'debian' }
   - { src: "etc/skel/.git-prompt-colors.sh.j2" }
   - { src: "etc/skel/.zshrc.j2" }
+  - { src: "etc/skel/.gitignore.j2" }
+  - { src: "etc/skel/.gitconfig.j2" }
   - { src: "etc/skel/.bash_aliases.j2" }
 
 skel_default_bash_aliases:
