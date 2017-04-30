@@ -38,7 +38,7 @@
     group: "{{ item.value.group|default(item.key) }}"
   with_dict: "{{ account_ssh_keys_pairs }}"
 
-- name: copy ssh public keys
+- name: copy ssh public keys content
   copy:
     content: '{{ item.value.public|trim }}'
     dest: "{{ (item.value.file|default('/home/' ~ item.key ~ '/.ssh/id_rsa')) ~ '.pub' }}"
@@ -47,9 +47,10 @@
     mode: 'u=rw,g=r,o='
     backup: no
     force: yes
+  when: item.value.public is defined and item.value.public is not none and item.value.public != ''
   with_dict: "{{ account_ssh_keys_pairs }}"
 
-- name: copy ssh private keys
+- name: copy ssh private keys content
   copy:
     content: '{{ item.value.private|trim ~ "\n" }}'
     dest: "{{ (item.value.file|default('/home/' ~ item.key ~ '/.ssh/id_rsa')) }}"
@@ -58,4 +59,29 @@
     mode: 'u=rw,g=,o='
     backup: no
     force: yes
+  when: item.value.private is defined and item.value.private is not none and item.value.private != ''
+  with_dict: "{{ account_ssh_keys_pairs }}"
+
+- name: copy ssh public keys file
+  copy:
+    src: '{{ item.value.public_file }}'
+    dest: "{{ (item.value.file|default('/home/' ~ item.key ~ '/.ssh/id_rsa')) ~ '.pub' }}"
+    owner: "{{ item.value.owner|default(item.key) }}"
+    group: "{{ item.value.group|default(item.key) }}"
+    mode: 'u=rw,g=r,o='
+    backup: no
+    force: yes
+  when: item.value.public_file is defined and item.value.public_file is not none and item.value.public_file != ''
+  with_dict: "{{ account_ssh_keys_pairs }}"
+
+- name: copy ssh private keys file
+  copy:
+    src: '{{ item.value.private_file }}'
+    dest: "{{ (item.value.file|default('/home/' ~ item.key ~ '/.ssh/id_rsa')) }}"
+    owner: "{{ item.value.owner|default(item.key) }}"
+    group: "{{ item.value.group|default(item.key) }}"
+    mode: 'u=rw,g=,o='
+    backup: no
+    force: yes
+  when: item.value.private_file is defined and item.value.private_file is not none and item.value.private_file != ''
   with_dict: "{{ account_ssh_keys_pairs }}"

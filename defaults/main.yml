@@ -89,8 +89,12 @@ account_ssh_keys_pairs: {}
   #     # private ssh key path
   #     file: # default = /home/<user>/.ssh/id_rsa
   #     # public ssh key
+  #     public_file:
+  #     # or
   #     public: 'xxxxxxxxxxxxxxxx'
   #     # private ssh key
+  #     private_file:
+  #     # or
   #     private: |
   #       xxxxxxxxxxxxxx
   #       xxxxxxxxxxxxxx
