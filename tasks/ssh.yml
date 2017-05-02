@@ -47,7 +47,7 @@
     mode: 'u=rw,g=r,o='
     backup: no
     force: yes
-  when: item.value.public is defined and item.value.public is not none and item.value.public != ''
+  when: item.value.public is defined and item.value.public
   with_dict: "{{ account_ssh_keys_pairs }}"
 
 - name: copy ssh private keys content
@@ -59,7 +59,7 @@
     mode: 'u=rw,g=,o='
     backup: no
     force: yes
-  when: item.value.private is defined and item.value.private is not none and item.value.private != ''
+  when: item.value.private is defined and item.value.private
   with_dict: "{{ account_ssh_keys_pairs }}"
 
 - name: copy ssh public keys file
@@ -71,7 +71,7 @@
     mode: 'u=rw,g=r,o='
     backup: no
     force: yes
-  when: item.value.public_file is defined and item.value.public_file is not none and item.value.public_file != ''
+  when: item.value.public_file is defined and item.value.public_file
   with_dict: "{{ account_ssh_keys_pairs }}"
 
 - name: copy ssh private keys file
@@ -83,5 +83,5 @@
     mode: 'u=rw,g=,o='
     backup: no
     force: yes
-  when: item.value.private_file is defined and item.value.private_file is not none and item.value.private_file != ''
+  when: item.value.private_file is defined and item.value.private_file
   with_dict: "{{ account_ssh_keys_pairs }}"
