@@ -84,23 +84,23 @@ account_url_authorized_keys: []
   #     - '<ssh-public-key4-path>'
 
 account_ssh_keys_pairs: {}
-  # <username>:
-  #   -
-  #     # private ssh key path
-  #     file: # default = /home/<user>/.ssh/id_rsa
-  #     # public ssh key
-  #     public_file:
-  #     # or
-  #     public: 'xxxxxxxxxxxxxxxx'
-  #     # private ssh key
-  #     private_file:
-  #     # or
-  #     private: |
-  #       xxxxxxxxxxxxxx
-  #       xxxxxxxxxxxxxx
-  #       xxxxxxxxxxxxxx
-  #     owner: # default = <username>
-  #     group: # default = <username>
+#   -
+#     user: <username>
+#     # private ssh key path
+#     file: # default = /home/<user>/.ssh/id_rsa
+#     # public ssh key
+#     public_file:
+#     # or
+#     public: 'xxxxxxxxxxxxxxxx'
+#     # private ssh key
+#     private_file:
+#     # or
+#     private: |
+#       xxxxxxxxxxxxxx
+#       xxxxxxxxxxxxxx
+#       xxxxxxxxxxxxxx
+#     owner: # default = <username>
+#     group: # default = <username>
 
 sudo_cmd_aliases:
   SHELLS:    "/bin/sh, /bin/bash, /bin/dash, /usr/bin/rsh, /usr/bin/csh, /usr/bin/ksh, /usr/local/bin/tcsh, /usr/bin/zsh"
