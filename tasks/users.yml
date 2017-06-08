@@ -14,7 +14,7 @@
     comment: "{{ item.value.comment | default(item.value.name) }}"
     shell: "{{ item.value.shell | default(omit) }}"
     system: "{{ item.value.system | default('no') }}"
-    groups: "{{ item.value.groups | default(omit) | join(',') }}"
+    groups: "{{ item.value.groups | default([]) | join(',') }}"
     append: "{{ item.value.append_groups | default('yes') }}"
     home: "{{ item.value.home|default(omit) }}"
     uid: "{{ item.value.uid|default(omit) }}"
