@@ -122,6 +122,11 @@ skel_templates:
   - { src: "etc/skel/.gitconfig.j2" }
   - { src: "etc/skel/.bash_aliases.j2" }
 
+root_templates:
+  - { src: "root/{{ ansible_os_family|lower }}/.bashrc.j2", force: yes }
+  - { src: "root/.bash_aliases.j2", force: yes }
+  - { src: "etc/skel/.zshrc.j2", force: yes }
+
 skel_default_bash_aliases:
   ack: ack-grep
   ackp: "ack-grep --nocolor --pager=\"less -r\""
@@ -175,8 +180,10 @@ skel_default_bash_aliases:
   todosr: "find . -type f \\! -regex \".*\\.\\(jpg\\|ico\\|bmp\\|jpeg\\|png\\|svg\\|psd\\|swf\\|z\\|tar\\|zip\\|bz2\\|7z\\|gz\\|tgz\\|phar\\|jar\\)\" \\! -path \"*svn*\" \\! -path \"*.git/*\" -exec todos {} \\;"
   vdir: "ls --color=auto --format=long"
   vi: vim
-  wanhost: "wget -q -O- ifconfig.me/host"
-  wanip: "wget -q -O- ifconfig.me/ip"
+  wanhost: 'curl -s ipinfo.io | jq -r .hostname'
+  wanhost2: 'curl ifconfig.me/host'
+  wanip: 'dig +short myip.opendns.com @resolver1.opendns.com'
+  wanip2: 'dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | tr -d "\""'
 
 skel_bash_aliases: {}
 

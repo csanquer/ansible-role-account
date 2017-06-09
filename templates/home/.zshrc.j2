@@ -30,12 +30,12 @@ setopt COMPLETE_IN_WORD
 ## disable mail checking
 #MAILCHECK=0
 
-# autoload -U colors
-#colors
+autoload -U colors
+colors
 
 source $HOME/.bash_aliases
 
-if [ `whoami` = root ]; then
+if [ $UID -eq 0 ]; then
     PROMPT="%{$fg_bold[red]%}%n%{$fg_bold[white]%}@%{$fg_bold[green]%}%M%{$fg_bold[white]%}:%{$fg_bold[magenta]%}%~%{$reset_color%} \$(git_super_status)"$'\n'"%t %{$fg_bold[red]%}%#%{$reset_color%} "
 else
     PROMPT="%{$fg_bold[cyan]%}%n%{$fg_bold[white]%}@%{$fg_bold[green]%}%M%{$fg_bold[white]%}:%{$fg_bold[magenta]%}%~%{$reset_color%} \$(git_super_status)"$'\n'"%t %{$fg_bold[cyan]%}%#%{$reset_color%} "

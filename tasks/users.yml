@@ -39,6 +39,18 @@
   when: not item.value.no_chown_home|default(false)
   with_dict: "{{ account_users }}"
 
+- name: copy root home config files
+  template:
+    src: "{{ item.src }}"
+    dest: "/root/{{ item.dest|default(item.src | basename | regex_replace('\\.j2', '') ) }}"
+    owner: "root"
+    group: "root"
+    mode: "{{ item.mode|default('u=rw,g=r,o=r') }}"
+    backup: "{{ item.backup|default('yes') }}"
+    force: "{{ item.force|default('no') }}"
+  with_items: "{{ root_templates }}"
+  when: item.src is not none
+
 - name: copy home config files
   template:
     src: "{{ item.1.src }}"
