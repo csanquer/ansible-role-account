@@ -1,4 +1,15 @@
 ---
+- name: create SSH config files
+  template:
+    src: "home/ssh/config.j2"
+    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/config')) }}"
+    owner: "{{ item.owner|default(item.user) }}"
+    group: "{{ item.group|default(item.user) }}"
+    mode: 'u=rw,g=r,o=r'
+    backup: yes
+    force: "{{ item.force|default('yes') }}"
+  with_items: "{{ account_ssh_config }}"
+
 # remove all keys and add the new keys
 # merge account_authorized_keys and account_default_authorized_keys values
 - name: Set up SSH authorized_keys
