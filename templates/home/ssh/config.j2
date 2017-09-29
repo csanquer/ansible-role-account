@@ -1,6 +1,8 @@
 # {{ ansible_managed }}
 {% for cfg in item.configs %}
-{%   if cfg.comment is defined and cfg.comment %}{{ cfg.comment }}{% endif %}
+{%   if cfg.comment is defined and cfg.comment %}
+# {{ cfg.comment }}
+{% endif %}
 Host {{ cfg.host }}
 {%   for line in cfg.lines %}
     {{ line }}
