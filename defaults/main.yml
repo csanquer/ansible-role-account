@@ -142,8 +142,7 @@ root_templates:
   - { src: "etc/skel/.zshrc.j2", force: yes }
 
 skel_default_bash_aliases:
-  ack: ack-grep
-  ackp: "ack-grep --nocolor --pager=\"less -r\""
+  ackp: "ack --nocolor --pager=\"less -r\""
   bc: "bc -l"
   clr: clear
   df: "df -hT --total"
