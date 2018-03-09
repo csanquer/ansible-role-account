@@ -147,12 +147,53 @@ skel_default_bash_aliases:
   clr: clear
   df: "df -hT --total"
   dir: "ls --color=auto --format=vertical"
+  # docker
   dk: docker
   dkc: docker-compose
   dkm: docker-machine
-  dkrmexit: "docker rm $(docker ps -qa --no-trunc --filter \"status=exited\")"
-  dkrmorph: "docker rmi $(docker images --filter \"dangling=true\" -q --no-trunc)"
-  dkrmvol: "docker volume rm $(docker volume ls -q --filter \"dangling=true\")"
+  # Get latest container ID
+  dkl: "docker ps -l -q"
+  # Get container process
+  dkps: "docker ps"
+  # Get process included stop container
+  dkpa: "docker ps -a"
+  # Get images
+  dkim: "docker images"
+  # Get container IP
+  dkip: "docker inspect --format \"{{ .NetworkSettings.IPAddress }}\""
+  # Run deamonized container, e.g.: dkd base /bin/echo hello
+  dkd: "docker run -d -P"
+  # Run interactive container, e.g.: dki base /bin/bash
+  dki: "docker run -it -P"
+  # Run interactive container and delete on exit, e.g.: dkir base /bin/bash
+  dkir: "docker run --rm -it -P"
+  # Execute interactive container, e.g.: dkex base /bin/bash
+  dkex: "docker exec -it"
+  # Stop all containers
+  dkstop: 'docker stop $(docker ps -a -q)'
+  # Remove all containers
+  dkrm: 'docker rm $(docker ps -a -q)'
+  # Stop and Remove all containers
+  dkrmf: 'docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)'
+  # To delete all exited containers
+  dkrmexit: 'docker rm $(docker ps -qa --no-trunc --filter "status: exited")'
+  # to delete all orphaned (untagged) images (and save disk space)
+  dkrmorph: 'docker rmi $(docker images --filter "dangling: true" -q --no-trunc)'
+  # to delete all unused automatic volumes (and save disk space)
+  dkrmvol: 'docker volume rm $(docker volume ls -q --filter "dangling: true")'
+  # Remove all images
+  # dkri='docker rmi $(docker images -q)'
+  # Dockerfile build, e.g.: dbu tcnksm/test
+  # dkbu() { docker build -t=$1 .; }
+  # Show all alias related docker
+  # dkalias() { alias | grep 'docker' | sed "s/^\([^=]*\)=\(.*\)/\1 => \2/"| sed "s/['|\']//g" | sort; }
+  # Bash into running container
+  # dkbash() { docker exec -it $(docker ps -aqf "name=$1") bash; }
+
+  #docker-compose logs
+  dkcl: "docker-compose logs -f -t"
+
+
   du: "du -h"
   duf: "du -sk * | sort -n | perl -ne '\\''($s,$f)=split(m{\\t});for (qw(K M G)) {if($s<1024) {printf(\"%.1f\",$s);print \"$_\\t$f\"; last};$s=$s/1024}'\\''"
   dufr: "du -sk * | sort -nr | perl -ne '\\''($s,$f)=split(m{\\t});for (qw(K M G)) {if($s<1024) {printf(\"%.1f\",$s);print \"$_\\t$f\"; last};$s=$s/1024}'\\''"
