@@ -48,15 +48,23 @@
     - paths
     - { skip_missing: True }
 
+- name: "create {{ account_s3_tmp_path }} directory to store AWS S3 SSH authorized_keys"
+  file:
+    path: "{{ account_s3_tmp_path }}"
+    mode: "{{ account_s3_tmp_path_mode|default('u=rwx,g=rx,o=rx') }}"
+    owner: "{{ account_s3_tmp_path_owner|default('root') }}"
+    group: "{{ account_s3_tmp_path_group|default('root') }}"
+    state: directory
+
 - name: download SSH authorized_keys from files on AWS S3
   s3:
-    aws_access_key: "{{ aws_access_key|default(lookup('env', 'AWS_ACCESS_KEY'))|default(omit) }}"
-    aws_secret_key: "{{ aws_secret_key|default(lookup('env', 'AWS_SECRET_KEY'))|default(omit) }}"
-    region: "{{ item.1.region|default(aws_default_region)|default(omit) }}"
+    aws_access_key: "{{ aws_access_key|default(omit) }}"
+    aws_secret_key: "{{ aws_secret_key|default(omit) }}"
     bucket: "{{ item.1.bucket }}"
     object: "{{ item.1.object }}"
-    mode: getstr
-  register: account_ssh_s3_result
+    mode: get
+    overwrite: different
+    dest: "{{ account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }}"
   with_subelements:
     - "{{ account_url_authorized_keys }}"
     - s3
@@ -65,10 +73,12 @@
 - name: Set up SSH authorized_keys from files on AWS S3
   authorized_key:
     user: "{{ item.item.0.name }}"
-    key: "{{ item.contents|trim }}"
+    key: "{{ lookup('file', (account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_'))) }}"
     state: present
-  when: item.changed
-  with_items: "{{ account_ssh_s3_result.results }}"
+  with_subelements:
+    - "{{ account_url_authorized_keys }}"
+    - s3
+    - { skip_missing: True }
 
 - name: create ssh keys directory for keys to copy
   file:

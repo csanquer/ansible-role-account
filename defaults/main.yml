@@ -83,6 +83,11 @@ account_authorized_keys: {}
   #   - '<ssh-public-key3>'
   #   - '<ssh-public-key4>'
 
+account_s3_tmp_path: /root/s3_ssh_keys
+account_s3_tmp_path_mode: 'u=rwx,g=rx,o='
+account_s3_tmp_path_owner: root
+account_s3_tmp_path_group: root
+
 account_url_authorized_keys: []
   # -
   #   name: <username>
@@ -96,6 +101,10 @@ account_url_authorized_keys: []
   #     - '<ssh-public-key2-path>'
   #     - '<ssh-public-key3-path>'
   #     - '<ssh-public-key4-path>'
+  #   s3:
+  #     -
+  #       bucket:
+  #       object:
 
 account_ssh_keys_pairs: {}
 #   -
