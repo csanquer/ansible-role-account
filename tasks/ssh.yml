@@ -72,7 +72,7 @@
 
 - name: Set up SSH authorized_keys from files on AWS S3
   authorized_key:
-    user: "{{ item.item.0.name }}"
+    user: "{{ item.0.name }}"
     key: "{{ lookup('file', (account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_'))) }}"
     state: present
   with_subelements:
