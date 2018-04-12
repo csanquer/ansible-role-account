@@ -57,7 +57,7 @@
     state: directory
 
 - name: download SSH authorized_keys from files on AWS S3
-  s3:
+  aws_s3:
     aws_access_key: "{{ aws_access_key|default(omit) }}"
     aws_secret_key: "{{ aws_secret_key|default(omit) }}"
     bucket: "{{ item.1.bucket }}"
@@ -65,6 +65,16 @@
     mode: get
     overwrite: different
     dest: "{{ account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }}"
+  register: account_s3_ssh_dl_result
+  with_subelements:
+    - "{{ account_url_authorized_keys }}"
+    - s3
+    - { skip_missing: True }
+
+- name: get content from downloaded S3 SSH authorized_keys files
+  slurp:
+    src: "{{ account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }}"
+  register: account_s3_ssh_content
   with_subelements:
     - "{{ account_url_authorized_keys }}"
     - s3
@@ -72,13 +82,10 @@
 
 - name: Set up SSH authorized_keys from files on AWS S3
   authorized_key:
-    user: "{{ item.0.name }}"
-    key: "{{ lookup('file', (account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_'))) }}"
+    user: "{{ item.item.0.name }}"
+    key: "{{ item.content | b64decode  }}"
     state: present
-  with_subelements:
-    - "{{ account_url_authorized_keys }}"
-    - s3
-    - { skip_missing: True }
+  with_items: "{{ account_s3_ssh_content.results }}"
 
 - name: create ssh keys directory for keys to copy
   file:
