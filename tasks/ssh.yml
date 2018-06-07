@@ -56,36 +56,56 @@
     group: "{{ account_s3_tmp_path_group|default('root') }}"
     state: directory
 
+- name: create facts s3 keys to download from S3 infos
+  set_fact:
+    s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
+    s3_ssh_keys: "{{ s3_ssh_keys|default([]) + [{ 'user': item.0.name, 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
+  when: item.1.bucket is defined and item.1.object is defined
+  with_subelements:
+    - "{{ account_url_authorized_keys }}"
+    - s3
+    - { skip_missing: True }
+
+- name: create facts s3 keys to download from S3 URI
+  set_fact:
+    s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.1 | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
+    s3_ssh_keys: "{{ s3_ssh_keys|default([]) + [{ 'user': item.0.name, 'bucket': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.1 | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
+  when: item.1 is string and item.1 is match('(s3://)?[^/]+/.+')
+  with_subelements:
+    - "{{ account_url_authorized_keys }}"
+    - s3
+    - { skip_missing: True }
+
 - name: download SSH authorized_keys from files on AWS S3
   aws_s3:
     aws_access_key: "{{ aws_access_key|default(omit) }}"
     aws_secret_key: "{{ aws_secret_key|default(omit) }}"
-    bucket: "{{ item.1.bucket }}"
-    object: "{{ item.1.object }}"
+    bucket: "{{ item.bucket  }}"
+    object: "{{ item.object }}"
     mode: get
     overwrite: different
-    dest: "{{ account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }}"
+    dest: "{{ item.dest }}"
   register: account_s3_ssh_dl_result
-  with_subelements:
-    - "{{ account_url_authorized_keys }}"
-    - s3
-    - { skip_missing: True }
+  with_items: "{{ s3_items_to_dl|unique }}"
 
 - name: get content from downloaded S3 SSH authorized_keys files
   slurp:
-    src: "{{ account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }}"
+    src: "{{ item.dest}}"
   register: account_s3_ssh_content
-  with_subelements:
-    - "{{ account_url_authorized_keys }}"
-    - s3
-    - { skip_missing: True }
+  with_items: "{{ s3_items_to_dl|unique }}"
+
+- name: create facts s3_ssh_keys_content
+  set_fact:
+    s3_ssh_keys_content: "{{ s3_ssh_keys_content|default({})|combine({ item.source : item.content }) }}"
+  with_items: "{{ account_s3_ssh_content.results }}"
 
 - name: Set up SSH authorized_keys from files on AWS S3
   authorized_key:
-    user: "{{ item.item.0.name }}"
-    key: "{{ item.content | b64decode  }}"
+    user: "{{ item.user }}"
+    key: "{{ s3_ssh_keys_content[item.dest] | b64decode  }}"
     state: present
-  with_items: "{{ account_s3_ssh_content.results }}"
+  when: item.dest in s3_ssh_keys_content.keys()
+  with_items: "{{ s3_ssh_keys|unique }}"
 
 - name: create ssh keys directory for keys to copy
   file:

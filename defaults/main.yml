@@ -105,6 +105,8 @@ account_url_authorized_keys: []
   #     -
   #       bucket:
   #       object:
+  #     or S3 URI
+  #     - s3://bucket/object
 
 account_ssh_keys_pairs: {}
 #   -
