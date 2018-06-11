@@ -56,7 +56,7 @@
     group: "{{ account_s3_tmp_path_group|default('root') }}"
     state: directory
 
-- name: create facts s3 keys to download from S3 infos
+- name: create s3 keys to download facts from S3 infos
   set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
     s3_ssh_keys: "{{ s3_ssh_keys|default([]) + [{ 'user': item.0.name, 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
@@ -66,7 +66,7 @@
     - s3
     - { skip_missing: True }
 
-- name: create facts s3 keys to download from S3 URI
+- name: create s3 keys to download facts from S3 URI
   set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.1 | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
     s3_ssh_keys: "{{ s3_ssh_keys|default([]) + [{ 'user': item.0.name, 'bucket': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.1 | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
