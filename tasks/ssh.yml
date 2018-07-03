@@ -25,6 +25,15 @@
     ssh_known_hosts_keys: "{{ ssh_known_hosts_keys|default({})|combine({ item.item : item.stdout }) }}"
   with_items: "{{ ssh_known_hosts_key_result.results|default([]) }}"
 
+- name: create ssh keys directory for known host files
+  file:
+    path: "{{ item.path|default(( '/' if  item.user == 'root' else '/home/' ) ~ item.user ~ '/.ssh/known_hosts')|dirname }}}}"
+    state: directory
+    mode: 'u=rwX,g=r,o='
+    owner: "{{ item.owner|default(item.user) }}"
+    group: "{{ item.group|default(item.user) }}"
+  with_items: "{{ account_ssh_known_hosts }}"
+
 - name: add SSH server keys to known host files
   known_hosts:
     path: "{{ item.0.path|default(( '/' if  item.0.user == 'root' else '/home/' ) ~ item.0.user ~ '/.ssh/known_hosts') }}}}"
@@ -35,160 +44,160 @@
     - "{{ account_ssh_known_hosts }}"
     - hosts
     - { skip_missing: True }
-#
-# - name: create SSH config files
-#   template:
-#     src: "home/ssh/config.j2"
-#     dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/config')) }}"
-#     owner: "{{ item.owner|default(item.user) }}"
-#     group: "{{ item.group|default(item.user) }}"
-#     mode: 'u=rw,g=r,o=r'
-#     backup: yes
-#     force: "{{ item.force|default('yes') }}"
-#   with_items: "{{ account_ssh_config }}"
-#
-# # remove all keys and add the new keys
-# # merge account_authorized_keys and account_default_authorized_keys values
-# - name: Set up SSH authorized_keys
-#   authorized_key:
-#     user: "{{ item.key }}"
-#     key: "{% for sshkey in ((account_default_authorized_keys[item.key] | default([])) + (item.value | default([])) )  | unique | sort %}{{ sshkey }}{% if not loop.last %}{{ '\n' }}{% endif %}{% endfor %}"
-#     state: present
-#     exclusive: true
-#   with_dict: "{{ account_authorized_keys }}"
-#
-# - name: Set up SSH authorized_keys from URL
-#   authorized_key:
-#     user: "{{ item.0.name }}"
-#     key: "{{ item.1 }}"
-#     state: present
-#   with_subelements:
-#     - "{{ account_url_authorized_keys }}"
-#     - urls
-#     - { skip_missing: True }
-#
-# - name: Set up SSH authorized_keys from files
-#   authorized_key:
-#     user: "{{ item.0.name }}"
-#     key: "{{ lookup('file', item.1) }}"
-#     state: present
-#   with_subelements:
-#     - "{{ account_url_authorized_keys }}"
-#     - paths
-#     - { skip_missing: True }
-#
-# - name: "create {{ account_s3_tmp_path }} directory to store AWS S3 SSH authorized_keys"
-#   file:
-#     path: "{{ account_s3_tmp_path }}"
-#     mode: "{{ account_s3_tmp_path_mode|default('u=rwx,g=rx,o=rx') }}"
-#     owner: "{{ account_s3_tmp_path_owner|default('root') }}"
-#     group: "{{ account_s3_tmp_path_group|default('root') }}"
-#     state: directory
-#
-# - name: create s3 keys to download facts from S3 infos
-#   set_fact:
-#     s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
-#     s3_ssh_keys: "{{ s3_ssh_keys|default([]) + [{ 'user': item.0.name, 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
-#   when: item.1.bucket is defined and item.1.object is defined
-#   with_subelements:
-#     - "{{ account_url_authorized_keys }}"
-#     - s3
-#     - { skip_missing: True }
-#
-# - name: create s3 keys to download facts from S3 URI
-#   set_fact:
-#     s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.1 | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
-#     s3_ssh_keys: "{{ s3_ssh_keys|default([]) + [{ 'user': item.0.name, 'bucket': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.1 | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
-#   when: item.1 is string and item.1 is match('(s3://)?[^/]+/.+')
-#   with_subelements:
-#     - "{{ account_url_authorized_keys }}"
-#     - s3
-#     - { skip_missing: True }
-#
-# - name: download SSH authorized_keys from files on AWS S3
-#   aws_s3:
-#     aws_access_key: "{{ aws_access_key|default(omit) }}"
-#     aws_secret_key: "{{ aws_secret_key|default(omit) }}"
-#     bucket: "{{ item.bucket  }}"
-#     object: "{{ item.object }}"
-#     mode: get
-#     overwrite: different
-#     dest: "{{ item.dest }}"
-#   register: account_s3_ssh_dl_result
-#   with_items: "{{ s3_items_to_dl|unique }}"
-#
-# - name: get content from downloaded S3 SSH authorized_keys files
-#   slurp:
-#     src: "{{ item.dest}}"
-#   register: account_s3_ssh_content
-#   with_items: "{{ s3_items_to_dl|unique }}"
-#
-# - name: create facts s3_ssh_keys_content
-#   set_fact:
-#     s3_ssh_keys_content: "{{ s3_ssh_keys_content|default({})|combine({ item.source : item.content }) }}"
-#   with_items: "{{ account_s3_ssh_content.results }}"
-#
-# - name: Set up SSH authorized_keys from files on AWS S3
-#   authorized_key:
-#     user: "{{ item.user }}"
-#     key: "{{ s3_ssh_keys_content[item.dest] | b64decode  }}"
-#     state: present
-#   when: item.dest in s3_ssh_keys_content.keys()
-#   with_items: "{{ s3_ssh_keys|unique }}"
-#
-# - name: create ssh keys directory for keys to copy
-#   file:
-#     path: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa'))|dirname }}"
-#     state: directory
-#     mode: 'u=rwX,g=r,o='
-#     owner: "{{ item.owner|default(item.user) }}"
-#     group: "{{ item.group|default(item.user) }}"
-#   with_items: "{{ account_ssh_keys_pairs }}"
-#
-# - name: copy ssh public keys content
-#   copy:
-#     content: '{{ item.public|trim }}'
-#     dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
-#     owner: "{{ item.owner|default(item.user) }}"
-#     group: "{{ item.group|default(item.user }}"
-#     mode: 'u=rw,g=r,o='
-#     backup: no
-#     force: yes
-#   when: item.public is defined and item.public is not none and item.public != ''
-#   with_items: "{{ account_ssh_keys_pairs }}"
-#
-# - name: copy ssh private keys content
-#   copy:
-#     content: '{{ item.private|trim ~ "\n" }}'
-#     dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
-#     owner: "{{ item.owner|default(item.user) }}"
-#     group: "{{ item.group|default(item.user) }}"
-#     mode: 'u=rw,g=,o='
-#     backup: no
-#     force: yes
-#   when: item.private is defined and item.private is not none and item.private != ''
-#   with_items: "{{ account_ssh_keys_pairs }}"
-#
-# - name: copy ssh public keys file
-#   copy:
-#     src: '{{ item.public_file }}'
-#     dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
-#     owner: "{{ item.owner|default(item.user) }}"
-#     group: "{{ item.group|default(item.user) }}"
-#     mode: 'u=rw,g=r,o='
-#     backup: no
-#     force: yes
-#   when: item.public_file is defined and item.public_file is not none and item.public_file != ''
-#   with_items: "{{ account_ssh_keys_pairs }}"
-#
-# - name: copy ssh private keys file
-#   copy:
-#     src: '{{ item.private_file }}'
-#     dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
-#     owner: "{{ item.owner|default(item.user) }}"
-#     group: "{{ item.group|default(item.user) }}"
-#     mode: 'u=rw,g=,o='
-#     backup: no
-#     force: yes
-#   when: item.private_file is defined and item.private_file is not none and item.private_file != ''
-#   with_items: "{{ account_ssh_keys_pairs }}"
+
+- name: create SSH config files
+  template:
+    src: "home/ssh/config.j2"
+    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/config')) }}"
+    owner: "{{ item.owner|default(item.user) }}"
+    group: "{{ item.group|default(item.user) }}"
+    mode: 'u=rw,g=r,o=r'
+    backup: yes
+    force: "{{ item.force|default('yes') }}"
+  with_items: "{{ account_ssh_config }}"
+
+# remove all keys and add the new keys
+# merge account_authorized_keys and account_default_authorized_keys values
+- name: Set up SSH authorized_keys
+  authorized_key:
+    user: "{{ item.key }}"
+    key: "{% for sshkey in ((account_default_authorized_keys[item.key] | default([])) + (item.value | default([])) )  | unique | sort %}{{ sshkey }}{% if not loop.last %}{{ '\n' }}{% endif %}{% endfor %}"
+    state: present
+    exclusive: true
+  with_dict: "{{ account_authorized_keys }}"
+
+- name: Set up SSH authorized_keys from URL
+  authorized_key:
+    user: "{{ item.0.name }}"
+    key: "{{ item.1 }}"
+    state: present
+  with_subelements:
+    - "{{ account_url_authorized_keys }}"
+    - urls
+    - { skip_missing: True }
+
+- name: Set up SSH authorized_keys from files
+  authorized_key:
+    user: "{{ item.0.name }}"
+    key: "{{ lookup('file', item.1) }}"
+    state: present
+  with_subelements:
+    - "{{ account_url_authorized_keys }}"
+    - paths
+    - { skip_missing: True }
+
+- name: "create {{ account_s3_tmp_path }} directory to store AWS S3 SSH authorized_keys"
+  file:
+    path: "{{ account_s3_tmp_path }}"
+    mode: "{{ account_s3_tmp_path_mode|default('u=rwx,g=rx,o=rx') }}"
+    owner: "{{ account_s3_tmp_path_owner|default('root') }}"
+    group: "{{ account_s3_tmp_path_group|default('root') }}"
+    state: directory
+
+- name: create s3 keys to download facts from S3 infos
+  set_fact:
+    s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
+    s3_ssh_keys: "{{ s3_ssh_keys|default([]) + [{ 'user': item.0.name, 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
+  when: item.1.bucket is defined and item.1.object is defined
+  with_subelements:
+    - "{{ account_url_authorized_keys }}"
+    - s3
+    - { skip_missing: True }
+
+- name: create s3 keys to download facts from S3 URI
+  set_fact:
+    s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.1 | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
+    s3_ssh_keys: "{{ s3_ssh_keys|default([]) + [{ 'user': item.0.name, 'bucket': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.1 | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
+  when: item.1 is string and item.1 is match('(s3://)?[^/]+/.+')
+  with_subelements:
+    - "{{ account_url_authorized_keys }}"
+    - s3
+    - { skip_missing: True }
+
+- name: download SSH authorized_keys from files on AWS S3
+  aws_s3:
+    aws_access_key: "{{ aws_access_key|default(omit) }}"
+    aws_secret_key: "{{ aws_secret_key|default(omit) }}"
+    bucket: "{{ item.bucket  }}"
+    object: "{{ item.object }}"
+    mode: get
+    overwrite: different
+    dest: "{{ item.dest }}"
+  register: account_s3_ssh_dl_result
+  with_items: "{{ s3_items_to_dl|unique }}"
+
+- name: get content from downloaded S3 SSH authorized_keys files
+  slurp:
+    src: "{{ item.dest}}"
+  register: account_s3_ssh_content
+  with_items: "{{ s3_items_to_dl|unique }}"
+
+- name: create facts s3_ssh_keys_content
+  set_fact:
+    s3_ssh_keys_content: "{{ s3_ssh_keys_content|default({})|combine({ item.source : item.content }) }}"
+  with_items: "{{ account_s3_ssh_content.results }}"
+
+- name: Set up SSH authorized_keys from files on AWS S3
+  authorized_key:
+    user: "{{ item.user }}"
+    key: "{{ s3_ssh_keys_content[item.dest] | b64decode  }}"
+    state: present
+  when: item.dest in s3_ssh_keys_content.keys()
+  with_items: "{{ s3_ssh_keys|unique }}"
+
+- name: create ssh keys directory for keys to copy
+  file:
+    path: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa'))|dirname }}"
+    state: directory
+    mode: 'u=rwX,g=r,o='
+    owner: "{{ item.owner|default(item.user) }}"
+    group: "{{ item.group|default(item.user) }}"
+  with_items: "{{ account_ssh_keys_pairs }}"
+
+- name: copy ssh public keys content
+  copy:
+    content: '{{ item.public|trim }}'
+    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
+    owner: "{{ item.owner|default(item.user) }}"
+    group: "{{ item.group|default(item.user }}"
+    mode: 'u=rw,g=r,o='
+    backup: no
+    force: yes
+  when: item.public is defined and item.public is not none and item.public != ''
+  with_items: "{{ account_ssh_keys_pairs }}"
+
+- name: copy ssh private keys content
+  copy:
+    content: '{{ item.private|trim ~ "\n" }}'
+    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
+    owner: "{{ item.owner|default(item.user) }}"
+    group: "{{ item.group|default(item.user) }}"
+    mode: 'u=rw,g=,o='
+    backup: no
+    force: yes
+  when: item.private is defined and item.private is not none and item.private != ''
+  with_items: "{{ account_ssh_keys_pairs }}"
+
+- name: copy ssh public keys file
+  copy:
+    src: '{{ item.public_file }}'
+    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
+    owner: "{{ item.owner|default(item.user) }}"
+    group: "{{ item.group|default(item.user) }}"
+    mode: 'u=rw,g=r,o='
+    backup: no
+    force: yes
+  when: item.public_file is defined and item.public_file is not none and item.public_file != ''
+  with_items: "{{ account_ssh_keys_pairs }}"
+
+- name: copy ssh private keys file
+  copy:
+    src: '{{ item.private_file }}'
+    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
+    owner: "{{ item.owner|default(item.user) }}"
+    group: "{{ item.group|default(item.user) }}"
+    mode: 'u=rw,g=,o='
+    backup: no
+    force: yes
+  when: item.private_file is defined and item.private_file is not none and item.private_file != ''
+  with_items: "{{ account_ssh_keys_pairs }}"
