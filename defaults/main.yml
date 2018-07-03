@@ -68,6 +68,14 @@ account_ssh_config: []
   #         host:
   #         lines: []
 
+
+ssh_known_hosts_hash_enabled: false
+account_ssh_known_hosts: []
+  # -
+  #   user: <username>
+  #   path: # default = /home/<user>/.ssh/known_hosts
+  #   hosts: []
+
 # ssh key file in path  inventory_dir ~ '/' ~ ssh_public_keys_dir
 account_default_authorized_keys: {}
   # <username>:
