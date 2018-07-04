@@ -116,7 +116,7 @@ account_url_authorized_keys: []
   #     or S3 URI
   #     - s3://bucket/object
 
-account_ssh_keys_pairs: {}
+account_ssh_keys_pairs: []
 #   -
 #     user: <username>
 #     # private ssh key path
@@ -132,6 +132,14 @@ account_ssh_keys_pairs: {}
 #       xxxxxxxxxxxxxx
 #       xxxxxxxxxxxxxx
 #       xxxxxxxxxxxxxx
+#     s3_public_file: s3://bucket/object
+#     # or S3
+#        bucket:
+#        object:
+#     s3_private_file: s3://bucket/object
+#     # or S3
+#        bucket:
+#        object:
 #     owner: # default = <username>
 #     group: # default = <username>
 

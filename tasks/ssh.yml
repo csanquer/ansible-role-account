@@ -94,6 +94,34 @@
     group: "{{ account_s3_tmp_path_group|default('root') }}"
     state: directory
 
+- name: create facts s3 public keys to download from account_ssh_keys_pairs S3 infos
+  set_fact:
+    s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.s3_public_file.bucket, 'object': item.s3_public_file.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_public_file.bucket ~ '/' ~ item.s3_public_file.object)|replace('/', '_') }] }}"
+    s3_ssh_public_keys: "{{ s3_ssh_public_keys|default([]) + [{ 'user': item.user, 'owner': item.owner|default(item.user), 'group': item.group|default(item.user), 'file': item.file, 'public_file': account_s3_tmp_path ~ '/' ~ (item.s3_public_file.bucket ~ '/' ~ item.s3_public_file.object)|replace('/', '_') }] }}"
+  when: item.s3_public_file is defined and item.s3_public_file.bucket is defined and item.s3_public_file.object is defined
+  with_items: "{{ account_ssh_keys_pairs }}"
+
+- name: create facts s3 public keys to download from account_ssh_keys_pairs S3 URI
+  set_fact:
+    s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.s3_public_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.s3_public_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_public_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
+    s3_ssh_public_keys: "{{ s3_ssh_public_keys|default([]) + [{ 'user': item.user, 'owner': item.owner|default(item.user), 'group': item.group|default(item.user), 'file': item.file, 'public_file': account_s3_tmp_path ~ '/' ~ (item.s3_public_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
+  when: item.s3_public_file is defined and item.s3_public_file is string and item.s3_public_file is match('(s3://)?[^/]+/.+')
+  with_items: "{{ account_ssh_keys_pairs }}"
+
+- name: create facts s3 private keys to download from account_ssh_keys_pairs S3 infos
+  set_fact:
+    s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.s3_private_file.bucket, 'object': item.s3_private_file.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_private_file.bucket ~ '/' ~ item.s3_private_file.object)|replace('/', '_') }] }}"
+    s3_ssh_private_keys: "{{ s3_ssh_private_keys|default([]) + [{ 'user': item.user, 'owner': item.owner|default(item.user), 'group': item.group|default(item.user), 'file': item.file, 'private_file': account_s3_tmp_path ~ '/' ~ (item.s3_private_file.bucket ~ '/' ~ item.s3_private_file.object)|replace('/', '_') }] }}"
+  when: item.s3_private_file is defined and item.s3_private_file.bucket is defined and item.s3_private_file.object is defined
+  with_items: "{{ account_ssh_keys_pairs }}"
+
+- name: create facts s3 private keys to download from account_ssh_keys_pairs S3 URI
+  set_fact:
+    s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.s3_private_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.s3_private_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_private_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
+    s3_ssh_private_keys: "{{ s3_ssh_private_keys|default([]) + [{ 'user': item.user, 'owner': item.owner|default(item.user), 'group': item.group|default(item.user), 'file': item.file, 'private_file': account_s3_tmp_path ~ '/' ~ (item.s3_private_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
+  when: item.s3_private_file is defined and item.s3_private_file is string and item.s3_private_file is match('(s3://)?[^/]+/.+')
+  with_items: "{{ account_ssh_keys_pairs }}"
+
 - name: create s3 keys to download facts from S3 infos
   set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl|default([]) + [{ 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
@@ -114,7 +142,7 @@
     - s3
     - { skip_missing: True }
 
-- name: download SSH authorized_keys from files on AWS S3
+- name: download SSH keys from files on AWS S3
   aws_s3:
     aws_access_key: "{{ aws_access_key|default(omit) }}"
     aws_secret_key: "{{ aws_secret_key|default(omit) }}"
@@ -201,3 +229,27 @@
     force: yes
   when: item.private_file is defined and item.private_file is not none and item.private_file != ''
   with_items: "{{ account_ssh_keys_pairs }}"
+
+- name: copy ssh public keys from S3
+  copy:
+    content: '{{ s3_ssh_keys_content[item.public_file]| b64decode }}'
+    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
+    owner: "{{ item.owner|default(item.user) }}"
+    group: "{{ item.group|default(item.user) }}"
+    mode: 'u=rw,g=r,o='
+    backup: no
+    force: yes
+  when: item.public_file is defined and item.public_file is not none and item.public_file != ''
+  with_items: "{{ s3_ssh_public_keys }}"
+
+- name: copy ssh private keys from S3
+  copy:
+    content: '{{ s3_ssh_keys_content[item.private_file]| b64decode }}'
+    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
+    owner: "{{ item.owner|default(item.user) }}"
+    group: "{{ item.group|default(item.user) }}"
+    mode: 'u=rw,g=,o='
+    backup: no
+    force: yes
+  when: item.private_file is defined and item.private_file is not none and item.private_file != ''
+  with_items: "{{ s3_ssh_private_keys }}"
