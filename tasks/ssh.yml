@@ -240,7 +240,7 @@
     backup: no
     force: yes
   when: item.public_file is defined and item.public_file is not none and item.public_file != ''
-  with_items: "{{ s3_ssh_public_keys }}"
+  with_items: "{{ s3_ssh_public_keys|default([]) }}"
 
 - name: copy ssh private keys from S3
   copy:
@@ -252,4 +252,4 @@
     backup: no
     force: yes
   when: item.private_file is defined and item.private_file is not none and item.private_file != ''
-  with_items: "{{ s3_ssh_private_keys }}"
+  with_items: "{{ s3_ssh_private_keys|default([]) }}"
