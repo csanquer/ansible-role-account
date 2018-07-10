@@ -16,7 +16,7 @@
     - { skip_missing: True }
 
 - name: get SSH known_hosts server keys
-  shell: "ssh-keyscan {{ '-H ' if ssh_known_hosts_hash_enabled|default(false)|bool else ''}}{{ item }}"
+  shell: "ssh-keyscan {{ '-H ' if ssh_known_hosts_hash_enabled|default(false)|bool else ''}}-t {{ item.type|default(['rsa','dsa','ecdsa','ed25519'])|join(',')}} {{ item }}"
   register: ssh_known_hosts_key_result
   with_items: "{{ ssh_known_hosts|default([])|unique }}"
 
