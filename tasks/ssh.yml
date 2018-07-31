@@ -152,13 +152,13 @@
     overwrite: different
     dest: "{{ item.dest }}"
   register: account_s3_ssh_dl_result
-  with_items: "{{ s3_items_to_dl|unique }}"
+  with_items: "{{ s3_items_to_dl|default([])|unique }}"
 
 - name: get content from downloaded S3 SSH authorized_keys files
   slurp:
     src: "{{ item.dest}}"
   register: account_s3_ssh_content
-  with_items: "{{ s3_items_to_dl|unique }}"
+  with_items: "{{ s3_items_to_dl|default([])|unique }}"
 
 - name: create facts s3_ssh_keys_content
   set_fact:
@@ -171,7 +171,7 @@
     key: "{{ s3_ssh_keys_content[item.dest] | b64decode  }}"
     state: present
   when: item.dest in s3_ssh_keys_content.keys()
-  with_items: "{{ s3_ssh_keys|unique }}"
+  with_items: "{{ s3_ssh_keys|default([])|unique }}"
 
 - name: create ssh keys directory for keys to copy
   file:
