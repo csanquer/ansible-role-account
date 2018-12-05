@@ -4,4 +4,4 @@
     src: "{{ item.src }}"
     dest: "/etc/skel/{{ item.dest|default(item.src | basename | regex_replace('\\.j2', '') ) }}"
   when: item.os_family|default(ansible_os_family)|lower == ansible_os_family|lower
-  with_items: "{{ skel_templates }}"
+  loop: "{{ skel_templates }}"

@@ -19,7 +19,7 @@
     home: "{{ item.value.home|default(omit) }}"
     uid: "{{ item.value.uid|default(omit) }}"
     group: "{{ item.value.group|default(omit) }}"
-  with_dict: "{{ account_users }}"
+  loop: "{{ account_users|dict2items }}"
 
 # add a ! at the beginning of hashed password to lock it
 - name: set user password
@@ -27,7 +27,7 @@
     name: "{{ item.value.name }}"
     password: "{{ ('!' if item.value.lock|default(false) else '' ) ~ (account_user_passwords[item.value.name] |password_hash('sha512', item.value.salt|default(None))) }}"
   when: not item.value.no_password|default(false) and account_user_passwords[item.value.name] is defined
-  with_dict: "{{ account_users }}"
+  loop: "{{ account_users|dict2items }}"
 
 - name: chmod homes
   file:
@@ -37,7 +37,7 @@
     group: "{{ item.value.home_group|default(item.value.group) }}"
     state: directory
   when: not item.value.no_chown_home|default(false)
-  with_dict: "{{ account_users }}"
+  loop: "{{ account_users|dict2items }}"
 
 - name: copy root home config files
   template:
@@ -48,7 +48,7 @@
     mode: "{{ item.mode|default('u=rw,g=r,o=r') }}"
     backup: "{{ item.backup|default('yes') }}"
     force: "{{ item.force|default('no') }}"
-  with_items: "{{ root_templates }}"
+  loop: "{{ root_templates }}"
   when: item.src is not none
 
 - name: copy home config files
