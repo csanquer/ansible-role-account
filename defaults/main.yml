@@ -18,6 +18,10 @@ account_users: {}
   #   groups: [] # all user groups
   #   append_groups: yes # default yes
   #   shell: # ex.: /bin/bash or /bin/ash or /usr/bin/zsh
+  #   env_vars:
+  #     -
+  #       name: <key>
+  #       value: <value>
   #   uid:
   #   lock: false # lock password authentication : only ssh key authentication is allowed
   #   salt: # password salt, default = None
@@ -49,7 +53,9 @@ account_users: {}
 
 account_env_vars: {}
   # <username>:
-  #     <key>: <value>
+  #   -
+  #     name: <key>
+  #     value: <value>
 
 account_user_passwords: {}
     # <username>: <password>
@@ -171,6 +177,7 @@ root_templates:
 
 skel_default_bash_aliases:
   ackp: "ack --nocolor --pager=\"less -r\""
+  at: "atom -a ."
   bc: "bc -l"
   clr: clear
   df: "df -hT --total"
@@ -195,6 +202,7 @@ skel_default_bash_aliases:
   findtilde: "find . -name \"*~\""
   fromdosr: "find . -type f \\! -regex \".*\\.\\(jpg\\|ico\\|bmp\\|jpeg\\|png\\|svg\\|psd\\|swf\\|z\\|tar\\|zip\\|bz2\\|7z\\|gz\\|tgz\\|phar\\|jar\\)\" \\! -path \"*svn*\" \\! -path \"*.git/*\" -exec fromdos {} \\;"
   grep: "grep --color=auto"
+  kub: 'kubectl'
   l: "ls -CF"
   la: "ls -lhAF"
   ll: "ls -lhaF"

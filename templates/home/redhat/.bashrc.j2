@@ -73,9 +73,11 @@ if [ "$ssh_agent_autostart" = yes ]; then
     fi
 fi
 
-{% if item.0.name is defined %}
 # environment variables
-{%   for key,value in (account_env_vars[item.0.name]|default({})).iteritems() %}
-export {{ key|upper }}="{{ value }}"
-{%   endfor %}
-{% endif %}
+{% for item in account_env_vars[(item.0.name|default(""))]|default([]) %}
+export {{ item.name }}="{{ item.value }}"
+{% endfor %}
+
+{% for item in item.0.env_vars|default([]) %}
+export {{ item.name }}="{{ item.value }}"
+{% endfor %}
