@@ -5,18 +5,18 @@
 ## Examples are provided at the bottom of the file for collections
 ## of related commands, which can then be delegated out to particular
 ## users or groups.
-## 
+##
 ## This file must be edited with the 'visudo' command.
 
 ## Host Aliases
-## Groups of machines. You may prefer to use hostnames (perhaps using 
+## Groups of machines. You may prefer to use hostnames (perhaps using
 ## wildcards for entire domains) or IP addresses instead.
 # Host_Alias     FILESERVERS = fs1, fs2
 # Host_Alias     MAILSERVERS = smtp, smtp2
 
 ## User Aliases
 ## These aren't often necessary, as you can use regular groups
-## (ie, from files, LDAP, NIS, etc) in this file - just use %groupname 
+## (ie, from files, LDAP, NIS, etc) in this file - just use %groupname
 ## rather than USERALIAS
 # User_Alias ADMINS = jsmith, mikem
 
@@ -40,7 +40,7 @@
 # Cmnd_Alias STORAGE = /sbin/fdisk, /sbin/sfdisk, /sbin/parted, /sbin/partprobe, /bin/mount, /bin/umount
 
 ## Delegating permissions
-# Cmnd_Alias DELEGATING = /usr/sbin/visudo, /bin/chown, /bin/chmod, /bin/chgrp 
+# Cmnd_Alias DELEGATING = /usr/sbin/visudo, /bin/chown, /bin/chmod, /bin/chgrp
 
 ## Processes
 # Cmnd_Alias PROCESSES = /bin/nice, /bin/kill, /usr/bin/kill, /usr/bin/killall
@@ -48,14 +48,14 @@
 ## Drivers
 # Cmnd_Alias DRIVERS = /sbin/modprobe
 
-{% for key,value in sudo_cmd_aliases.iteritems() %}
-Cmnd_Alias {{ key }} = {{ value }}
+{% for item in sudo_cmd_aliases|dict2items %}
+Cmnd_Alias {{ item.key }} = {{ item.value }}
 {% endfor %}
 
 # Defaults specification
 
 #
-# Disable "ssh hostname sudo <cmd>", because it will show the password in clear. 
+# Disable "ssh hostname sudo <cmd>", because it will show the password in clear.
 #         You have to run "ssh -t hostname sudo <cmd>".
 #
 #Defaults requiretty
@@ -90,7 +90,7 @@ Defaults    env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY
 
 Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin
 
-## Next comes the main part: which users can run what software on 
+## Next comes the main part: which users can run what software on
 ## which machines (the sudoers file can be shared between multiple
 ## systems).
 ## Syntax:

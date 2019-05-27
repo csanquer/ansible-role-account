@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
-{% for section,configs in skel_gitconfig.iteritems() %}
-[{{ section }}]
-{%     for key,value in configs.iteritems() %}
-     {{ key }} = {{ value }}
+{% for item in skel_gitconfig|dict2items %}
+[{{ item.key }}]
+{%     for item2 in item.value|dict2items %}
+     {{ item2.key }} = {{ item2.value }}
 {%     endfor %}
 {% endfor %}
