@@ -307,8 +307,7 @@ skel_gitconfig:
     staged: diff --cached
     dfc: diff --cached
     lg: log --graph --decorate --oneline
-    lgp: log --graph --pretty=tformat:'%C(yellow)%h%Creset%C(auto)%d%Creset %s %C(blue)(%an)%Creset %Cgreen(%cd - %cr)%Creset' --abbrev-commit --date=local
-    #lgp: log --graph --pretty=tformat:'%C(yellow)%h%Creset%C(yellow)%d%Creset %s %C(blue)(%an)%Creset %Cgreen(%cd - %cr)%Creset' --abbrev-commit --date=local
+    lgp: log --graph --pretty=tformat:'%C(yellow)%h%Creset%C(auto)%d%Creset %s %C(blue)(%an)%Creset %C(yellow)%G?%Creset %Cgreen(%cd - %cr)%Creset' --abbrev-commit --date=local
     last: log -1 HEAD
     tip: log -n 1 --abbrev-commit --decorate
     changelog-html: log --no-merges --date=short --format='<li id=\"%h\"><time>%ad</time> %s</li>'
