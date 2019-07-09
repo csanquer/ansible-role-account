@@ -267,6 +267,10 @@ skel_gitconfig:
     excludesfile: '~/.gitignore'
     autocrlf: 'input'
     editor: vim
+  credential:
+    helper: store
+  commit:
+    gpgsign: 'false'
   alias:
     # show aliases
     alias: '!git config --list | grep ''alias\\.'' | sed ''s/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\\t=> \\2/'' | sort'
