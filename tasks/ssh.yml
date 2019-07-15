@@ -1,34 +1,36 @@
 ---
 - name: create SSH known_hosts server list
   set_fact:
-    ssh_known_hosts: "{{ ssh_known_hosts|default([]) + [ item.1 ] }}"
+    ssh_known_hosts: "{{ ssh_known_hosts | default([]) + [ item.1 ] }}"
   with_subelements:
     - "{{ account_ssh_known_hosts }}"
     - hosts
     - { skip_missing: True }
 
-- name: get SSH known_hosts server keys
-  shell: "ssh-keyscan {{ '-H ' if ssh_known_hosts_hash_enabled|default(false)|bool else ''}}-t {{ item.type|default(['rsa','dsa','ecdsa','ed25519'])|join(',')}} {{ item }}"
+- name: get SSH known_hosts server keys # noqa 301
+  command: >
+    ssh-keyscan {{ '-H ' if ssh_known_hosts_hash_enabled | default(false) | bool else '' }}-t
+    {{ item.type | default(['rsa','dsa','ecdsa','ed25519']) | join(',') }} {{ item }}
   register: ssh_known_hosts_key_result
-  loop: "{{ ssh_known_hosts|default([])|unique }}"
+  loop: "{{ ssh_known_hosts | default([]) | unique }}"
 
 - name: create SSH known_hosts server keys list
   set_fact:
-    ssh_known_hosts_keys: "{{ ssh_known_hosts_keys|default({})|combine({ item.item : item.stdout }) }}"
-  loop: "{{ ssh_known_hosts_key_result.results|default([]) }}"
+    ssh_known_hosts_keys: "{{ ssh_known_hosts_keys | default({})|combine({ item.item : item.stdout }) }}"
+  loop: "{{ ssh_known_hosts_key_result.results | default([]) }}"
 
 - name: create ssh keys directory for known host files
   file:
-    path: "{{ item.path|default(( '/' if  item.user == 'root' else '/home/' ) ~ item.user ~ '/.ssh/known_hosts')|dirname }}"
+    path: "{{ item.path | default(( '/' if  item.user == 'root' else '/home/' ) ~ item.user ~ '/.ssh/known_hosts')|dirname }}"
     state: directory
     mode: 'u=rwX,g=r,o='
-    owner: "{{ item.owner|default(item.user) }}"
-    group: "{{ item.group|default(item.user) }}"
+    owner: "{{ item.owner | default(item.user) }}"
+    group: "{{ item.group | default(item.user) }}"
   loop: "{{ account_ssh_known_hosts }}"
 
 - name: add SSH server keys to known host files
   known_hosts:
-    path: "{{ item.0.path|default(( '/' if  item.0.user == 'root' else '/home/' ) ~ item.0.user ~ '/.ssh/known_hosts') }}"
+    path: "{{ item.0.path | default(( '/' if  item.0.user == 'root' else '/home/' ) ~ item.0.user ~ '/.ssh/known_hosts') }}"
     name: "{{ item.1 }}"
     key: "{{  ssh_known_hosts_keys[item.1] }}"
     state: present
@@ -40,12 +42,12 @@
 - name: create SSH config files
   template:
     src: "home/ssh/config.j2"
-    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/config')) }}"
-    owner: "{{ item.owner|default(item.user) }}"
-    group: "{{ item.group|default(item.user) }}"
+    dest: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/config')) }}"
+    owner: "{{ item.owner | default(item.user) }}"
+    group: "{{ item.group | default(item.user) }}"
     mode: 'u=rw,g=r,o=r'
     backup: yes
-    force: "{{ item.force|default('yes') }}"
+    force: "{{ item.force | default('yes') }}"
   loop: "{{ account_ssh_config }}"
 
 # remove all keys and add the new keys
@@ -56,7 +58,7 @@
     key: "{% for sshkey in ((account_default_authorized_keys[item.key] | default([])) + (item.value | default([])) )  | unique | sort %}{{ sshkey }}{% if not loop.last %}{{ '\n' }}{% endif %}{% endfor %}"
     state: present
     exclusive: true
-  loop: "{{ account_authorized_keys|dict2items }}"
+  loop: "{{ account_authorized_keys | dict2items }}"
 
 - name: Set up SSH authorized_keys from URL
   authorized_key:
@@ -80,59 +82,59 @@
 
 - name: create ssh keys directory for keys to copy
   file:
-    path: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa'))|dirname }}"
+    path: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa'))|dirname }}"
     state: directory
     mode: 'u=rwX,g=r,o='
-    owner: "{{ item.owner|default(item.user) }}"
-    group: "{{ item.group|default(item.user) }}"
+    owner: "{{ item.owner | default(item.user) }}"
+    group: "{{ item.group | default(item.user) }}"
   loop: "{{ account_ssh_keys_pairs }}"
 
 - name: copy ssh public keys content
   copy:
-    content: '{{ item.public|trim }}'
-    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
-    owner: "{{ item.owner|default(item.user) }}"
-    group: "{{ item.group|default(item.user }}"
+    content: '{{ item.public | trim }}'
+    dest: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
+    owner: "{{ item.owner | default(item.user) }}"
+    group: "{{ item.group | default(item.user }}"
     mode: 'u=rw,g=r,o='
     backup: no
     force: yes
-  when: item.public is defined and item.public is not none and item.public != ''
+  when: item.public is defined and item.public is not none and item.public
   loop: "{{ account_ssh_keys_pairs }}"
 
 - name: copy ssh private keys content
   copy:
-    content: '{{ item.private|trim ~ "\n" }}'
-    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
-    owner: "{{ item.owner|default(item.user) }}"
-    group: "{{ item.group|default(item.user) }}"
+    content: '{{ item.private | trim ~ "\n" }}'
+    dest: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
+    owner: "{{ item.owner | default(item.user) }}"
+    group: "{{ item.group | default(item.user) }}"
     mode: 'u=rw,g=,o='
     backup: no
     force: yes
-  when: item.private is defined and item.private is not none and item.private != ''
+  when: item.private is defined and item.private is not none and item.private
   loop: "{{ account_ssh_keys_pairs }}"
 
 - name: copy ssh public keys file
   copy:
     src: '{{ item.public_file }}'
-    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
-    owner: "{{ item.owner|default(item.user) }}"
-    group: "{{ item.group|default(item.user) }}"
+    dest: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
+    owner: "{{ item.owner | default(item.user) }}"
+    group: "{{ item.group | default(item.user) }}"
     mode: 'u=rw,g=r,o='
     backup: no
     force: yes
-  when: item.public_file is defined and item.public_file is not none and item.public_file != ''
+  when: item.public_file is defined and item.public_file is not none and item.public_file
   loop: "{{ account_ssh_keys_pairs }}"
 
 - name: copy ssh private keys file
   copy:
     src: '{{ item.private_file }}'
-    dest: "{{ (item.file|default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
-    owner: "{{ item.owner|default(item.user) }}"
-    group: "{{ item.group|default(item.user) }}"
+    dest: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
+    owner: "{{ item.owner | default(item.user) }}"
+    group: "{{ item.group | default(item.user) }}"
     mode: 'u=rw,g=,o='
     backup: no
     force: yes
-  when: item.private_file is defined and item.private_file is not none and item.private_file != ''
+  when: item.private_file is defined and item.private_file is not none and item.private_file
   loop: "{{ account_ssh_keys_pairs }}"
 
 - include: ssh_aws_s3.yml
