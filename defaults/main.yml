@@ -223,8 +223,8 @@ skel_default_bash_aliases:
   screen: "screen -"
   suemacs: "sudo emacs -nw"
   suvi: "sudo vim"
-  tf: "terraform"
-  pk: "packer"
+  tf: "terraform"
+  pk: "packer"
   tm: tmux
   tman: "if tmux has; then tmux attach -d; else tmux new; fi"
   tmls: "tmux ls"
