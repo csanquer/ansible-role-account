@@ -108,7 +108,7 @@
 
 - name: copy ssh private keys content
   copy:
-    content: '{{ item.private | trim ~ "\n" }}'
+    content: '{{ item.private | trim }}'
     dest: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
     owner: "{{ item.owner | default(item.user) }}"
     group: "{{ item.group | default(item.user) }}"
