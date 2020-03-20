@@ -90,6 +90,7 @@
     mode: 'u=rwX,g=r,o='
     owner: "{{ item.owner | default(item.user) }}"
     group: "{{ item.group | default(item.user) }}"
+  no_log: True
   loop: "{{ account_ssh_keys_pairs }}"
 
 - name: copy ssh public keys content
