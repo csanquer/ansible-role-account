@@ -92,6 +92,7 @@
     user: "{{ item.user }}"
     key: "{{ s3_ssh_keys_content[item.dest] | b64decode  }}"
     state: present
+  no_log: True
   when: item.dest in s3_ssh_keys_content.keys()
   loop: "{{ s3_ssh_keys | default([]) | unique }}"
 
@@ -104,6 +105,7 @@
     mode: 'u=rw,g=r,o='
     backup: no
     force: yes
+  no_log: True
   when: item.public_file is defined and item.public_file is not none and item.public_file
   loop: "{{ s3_ssh_public_keys | default([]) }}"
 
@@ -116,5 +118,6 @@
     mode: 'u=rw,g=,o='
     backup: no
     force: yes
+  no_log: True
   when: item.private_file is defined and item.private_file is not none and item.private_file
   loop: "{{ s3_ssh_private_keys | default([]) }}"

@@ -58,6 +58,7 @@
     key: "{% for sshkey in ((account_default_authorized_keys[item.key] | default([])) + (item.value | default([])) )  | unique | sort %}{{ sshkey }}{% if not loop.last %}{{ '\n' }}{% endif %}{% endfor %}"
     state: present
     exclusive: true
+  no_log: True
   loop: "{{ account_authorized_keys | dict2items }}"
 
 - name: Set up SSH authorized_keys from URL
@@ -65,6 +66,7 @@
     user: "{{ item.0.name }}"
     key: "{{ item.1 }}"
     state: present
+  no_log: True
   with_subelements:
     - "{{ account_url_authorized_keys }}"
     - urls
@@ -75,6 +77,7 @@
     user: "{{ item.0.name }}"
     key: "{{ lookup('file', item.1) }}"
     state: present
+  no_log: True
   with_subelements:
     - "{{ account_url_authorized_keys }}"
     - paths
@@ -82,7 +85,7 @@
 
 - name: create ssh keys directory for keys to copy
   file:
-    path: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa'))|dirname }}"
+    path: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa')) | dirname }}"
     state: directory
     mode: 'u=rwX,g=r,o='
     owner: "{{ item.owner | default(item.user) }}"
@@ -94,10 +97,11 @@
     content: '{{ item.public | trim }}'
     dest: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
     owner: "{{ item.owner | default(item.user) }}"
-    group: "{{ item.group | default(item.user }}"
+    group: "{{ item.group | default(item.user) }}"
     mode: 'u=rw,g=r,o='
     backup: no
     force: yes
+  no_log: True
   when: item.public is defined and item.public is not none and item.public
   loop: "{{ account_ssh_keys_pairs }}"
 
@@ -110,6 +114,7 @@
     mode: 'u=rw,g=,o='
     backup: no
     force: yes
+  no_log: True
   when: item.private is defined and item.private is not none and item.private
   loop: "{{ account_ssh_keys_pairs }}"
 
@@ -122,6 +127,7 @@
     mode: 'u=rw,g=r,o='
     backup: no
     force: yes
+  no_log: True
   when: item.public_file is defined and item.public_file is not none and item.public_file
   loop: "{{ account_ssh_keys_pairs }}"
 
@@ -134,6 +140,7 @@
     mode: 'u=rw,g=,o='
     backup: no
     force: yes
+  no_log: True
   when: item.private_file is defined and item.private_file is not none and item.private_file
   loop: "{{ account_ssh_keys_pairs }}"
 
