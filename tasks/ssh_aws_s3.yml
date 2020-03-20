@@ -12,6 +12,7 @@
   set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl | default([]) + [{ 'bucket': item.s3_public_file.bucket, 'object': item.s3_public_file.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_public_file.bucket ~ '/' ~ item.s3_public_file.object)|replace('/', '_') }] }}"
     s3_ssh_public_keys: "{{ s3_ssh_public_keys | default([]) + [{ 'user': item.user, 'owner': item.owner | default(item.user), 'group': item.group | default(item.user), 'file': item.file|default(none), 'public_file': account_s3_tmp_path ~ '/' ~ (item.s3_public_file.bucket ~ '/' ~ item.s3_public_file.object)|replace('/', '_') }] }}"
+  no_log: True
   when: item.s3_public_file is defined and item.s3_public_file.bucket is defined and item.s3_public_file.object is defined
   loop: "{{ account_ssh_keys_pairs }}"
 
@@ -19,6 +20,7 @@
   set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl | default([]) + [{ 'bucket': item.s3_public_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.s3_public_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_public_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
     s3_ssh_public_keys: "{{ s3_ssh_public_keys | default([]) + [{ 'user': item.user, 'owner': item.owner | default(item.user), 'group': item.group | default(item.user), 'file': item.file|default(none), 'public_file': account_s3_tmp_path ~ '/' ~ (item.s3_public_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
+  no_log: True
   when: item.s3_public_file is defined and item.s3_public_file is string and item.s3_public_file is match('(s3://)?[^/]+/.+')
   loop: "{{ account_ssh_keys_pairs }}"
 
@@ -26,6 +28,7 @@
   set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl | default([]) + [{ 'bucket': item.s3_private_file.bucket, 'object': item.s3_private_file.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_private_file.bucket ~ '/' ~ item.s3_private_file.object)|replace('/', '_') }] }}"
     s3_ssh_private_keys: "{{ s3_ssh_private_keys | default([]) + [{ 'user': item.user, 'owner': item.owner | default(item.user), 'group': item.group | default(item.user), 'file': item.file|default(none), 'private_file': account_s3_tmp_path ~ '/' ~ (item.s3_private_file.bucket ~ '/' ~ item.s3_private_file.object)|replace('/', '_') }] }}"
+  no_log: True
   when: item.s3_private_file is defined and item.s3_private_file.bucket is defined and item.s3_private_file.object is defined
   loop: "{{ account_ssh_keys_pairs }}"
 
@@ -33,6 +36,7 @@
   set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl | default([]) + [{ 'bucket': item.s3_private_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.s3_private_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_private_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
     s3_ssh_private_keys: "{{ s3_ssh_private_keys | default([]) + [{ 'user': item.user, 'owner': item.owner | default(item.user), 'group': item.group | default(item.user), 'file': item.file|default(none), 'private_file': account_s3_tmp_path ~ '/' ~ (item.s3_private_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
+  no_log: True
   when: item.s3_private_file is defined and item.s3_private_file is string and item.s3_private_file is match('(s3://)?[^/]+/.+')
   loop: "{{ account_ssh_keys_pairs }}"
 
@@ -85,6 +89,7 @@
 - name: create facts s3_ssh_keys_content
   set_fact:
     s3_ssh_keys_content: "{{ s3_ssh_keys_content | default({}) | combine({ item.source : item.content }) }}"
+  no_log: True
   loop: "{{ account_s3_ssh_content.results }}"
 
 - name: Set up SSH authorized_keys from files on AWS S3
