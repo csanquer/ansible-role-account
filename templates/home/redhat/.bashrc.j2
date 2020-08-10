@@ -81,3 +81,12 @@ export {{ item.name | upper }}="{{ item.value }}"
 {% for item in item.0.env_vars|default([]) %}
 export {{ item.name | upper }}="{{ item.value }}"
 {% endfor %}
+
+# custom config
+{% for line in account_bash_extra_lines[(item.0.name|default(""))]|default([]) %}
+{{ item }}
+{% endfor %}
+
+{% for line in item.0.bash_extra_lines|default([]) %}
+{{ item }}
+{% endfor %}

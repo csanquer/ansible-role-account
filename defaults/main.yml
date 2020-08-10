@@ -50,12 +50,24 @@ account_users: {}
   #     - { name: 'user.email', option: 'martin.dupond@example.com'}
   #  bash_aliases:
   #     <alias>: <command>
+  #  # extra bash shell lines at the end of ~/.bashrc
+  #  bash_extra_lines: []
+  #  # extra zsh shell lines at the end of ~/.bashrc
+  #  zsh_extra_lines: []
 
 account_env_vars: {}
   # <username>:
   #   -
   #     name: <key>
   #     value: <value>
+
+# extra bash shell lines at the end of ~/.bashrc
+account_bash_extra_lines: {}
+  # <username>: []
+
+# extra zsh shell lines at the end of ~/.bashrc
+account_zsh_extra_lines: {}
+  # <username>: []
 
 account_user_passwords: {}
     # <username>: <password>
