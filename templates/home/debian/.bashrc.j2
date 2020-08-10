@@ -174,9 +174,9 @@ export {{ item.name | upper }}="{{ item.value }}"
 
 # custom config
 {% for line in account_bash_extra_lines[(item.0.name|default(""))]|default([]) %}
-{{ item }}
+{{ line }}
 {% endfor %}
 
 {% for line in item.0.bash_extra_lines|default([]) %}
-{{ item }}
+{{ line }}
 {% endfor %}
