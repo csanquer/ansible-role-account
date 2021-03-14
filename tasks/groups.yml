@@ -1,6 +1,6 @@
 ---
 - name: create groups
-  group:
+  ansible.builtin.group:
     name: "{{ item.key }}"
     system: "{{ item.value.system | default('no') }}"
     gid: "{{ item.value.gid | default(omit) }}"

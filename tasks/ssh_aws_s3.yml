@@ -1,7 +1,7 @@
 ---
 
 - name: "create {{ account_s3_tmp_path }} directory to store AWS S3 SSH authorized_keys"
-  file:
+  ansible.builtin.file:
     path: "{{ account_s3_tmp_path }}"
     mode: "{{ account_s3_tmp_path_mode | default('u=rwx,g=rx,o=rx') }}"
     owner: "{{ account_s3_tmp_path_owner | default('root') }}"
@@ -9,7 +9,7 @@
     state: directory
 
 - name: create facts s3 public keys to download from account_ssh_keys_pairs S3 infos
-  set_fact:
+  ansible.builtin.set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl | default([]) + [{ 'bucket': item.s3_public_file.bucket, 'object': item.s3_public_file.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_public_file.bucket ~ '/' ~ item.s3_public_file.object)|replace('/', '_') }] }}"
     s3_ssh_public_keys: "{{ s3_ssh_public_keys | default([]) + [{ 'user': item.user, 'owner': item.owner | default(item.user), 'group': item.group | default(item.user), 'file': item.file|default(none), 'public_file': account_s3_tmp_path ~ '/' ~ (item.s3_public_file.bucket ~ '/' ~ item.s3_public_file.object)|replace('/', '_') }] }}"
   no_log: True
@@ -17,7 +17,7 @@
   loop: "{{ account_ssh_keys_pairs }}"
 
 - name: create facts s3 public keys to download from account_ssh_keys_pairs S3 URI
-  set_fact:
+  ansible.builtin.set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl | default([]) + [{ 'bucket': item.s3_public_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.s3_public_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_public_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
     s3_ssh_public_keys: "{{ s3_ssh_public_keys | default([]) + [{ 'user': item.user, 'owner': item.owner | default(item.user), 'group': item.group | default(item.user), 'file': item.file|default(none), 'public_file': account_s3_tmp_path ~ '/' ~ (item.s3_public_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
   no_log: True
@@ -25,7 +25,7 @@
   loop: "{{ account_ssh_keys_pairs }}"
 
 - name: create facts s3 private keys to download from account_ssh_keys_pairs S3 infos
-  set_fact:
+  ansible.builtin.set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl | default([]) + [{ 'bucket': item.s3_private_file.bucket, 'object': item.s3_private_file.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_private_file.bucket ~ '/' ~ item.s3_private_file.object)|replace('/', '_') }] }}"
     s3_ssh_private_keys: "{{ s3_ssh_private_keys | default([]) + [{ 'user': item.user, 'owner': item.owner | default(item.user), 'group': item.group | default(item.user), 'file': item.file|default(none), 'private_file': account_s3_tmp_path ~ '/' ~ (item.s3_private_file.bucket ~ '/' ~ item.s3_private_file.object)|replace('/', '_') }] }}"
   no_log: True
@@ -33,7 +33,7 @@
   loop: "{{ account_ssh_keys_pairs }}"
 
 - name: create facts s3 private keys to download from account_ssh_keys_pairs S3 URI
-  set_fact:
+  ansible.builtin.set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl | default([]) + [{ 'bucket': item.s3_private_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.s3_private_file | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.s3_private_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
     s3_ssh_private_keys: "{{ s3_ssh_private_keys | default([]) + [{ 'user': item.user, 'owner': item.owner | default(item.user), 'group': item.group | default(item.user), 'file': item.file|default(none), 'private_file': account_s3_tmp_path ~ '/' ~ (item.s3_private_file | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
   no_log: True
@@ -41,7 +41,7 @@
   loop: "{{ account_ssh_keys_pairs }}"
 
 - name: create s3 keys to download facts from S3 infos
-  set_fact:
+  ansible.builtin.set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl | default([]) + [{ 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
     s3_ssh_keys: "{{ s3_ssh_keys | default([]) + [{ 'user': item.0.name, 'bucket': item.1.bucket, 'object': item.1.object, 'dest': account_s3_tmp_path ~ '/' ~ (item.1.bucket ~ '/' ~ item.1.object)|replace('/', '_') }] }}"
   when: item.1.bucket is defined and item.1.object is defined
@@ -51,7 +51,7 @@
     - { skip_missing: True }
 
 - name: create s3 keys to download facts from S3 URI
-  set_fact:
+  ansible.builtin.set_fact:
     s3_items_to_dl: "{{ s3_items_to_dl | default([]) + [{ 'bucket': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.1 | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
     s3_ssh_keys: "{{ s3_ssh_keys | default([]) + [{ 'user': item.0.name, 'bucket': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\2'), 'object': item.1 | regex_replace('(s3://)?([^/]+)/(.+)', '\\3'), 'dest': account_s3_tmp_path ~ '/' ~ (item.1 | regex_replace('(s3://)?(.+)', '\\2') )|replace('/', '_') }] }}"
   when: item.1 is string and item.1 is match('(s3://)?[^/]+/.+')
@@ -61,7 +61,7 @@
     - { skip_missing: True }
 
 - name: install Python AWS SDK boto
-  pip:
+  ansible.builtin.pip:
     name:
       - boto
       - boto3
@@ -69,7 +69,7 @@
   when: (s3_items_to_dl | default([])|length) > 0
 
 - name: download SSH keys from files on AWS S3
-  aws_s3:
+  amazon.aws.aws_s3:
     aws_access_key: "{{ aws_access_key | default(omit) }}"
     aws_secret_key: "{{ aws_secret_key | default(omit) }}"
     bucket: "{{ item.bucket  }}"
@@ -81,19 +81,19 @@
   loop: "{{ s3_items_to_dl | default([]) | unique }}"
 
 - name: get content from downloaded S3 SSH authorized_keys files
-  slurp:
+  ansible.builtin.slurp:
     src: "{{ item.dest }}"
   register: account_s3_ssh_content
   loop: "{{ s3_items_to_dl | default([]) | unique }}"
 
 - name: create facts s3_ssh_keys_content
-  set_fact:
+  ansible.builtin.set_fact:
     s3_ssh_keys_content: "{{ s3_ssh_keys_content | default({}) | combine({ item.source : item.content }) }}"
   no_log: True
   loop: "{{ account_s3_ssh_content.results }}"
 
 - name: Set up SSH authorized_keys from files on AWS S3
-  authorized_key:
+  ansible.posix.authorized_key:
     user: "{{ item.user }}"
     key: "{{ s3_ssh_keys_content[item.dest] | b64decode  }}"
     state: present
@@ -102,7 +102,7 @@
   loop: "{{ s3_ssh_keys | default([]) | unique }}"
 
 - name: copy ssh public keys from S3
-  copy:
+  ansible.builtin.copy:
     content: '{{ s3_ssh_keys_content[item.public_file]| b64decode }}'
     dest: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa')) ~ '.pub' }}"
     owner: "{{ item.owner | default(item.user) }}"
@@ -115,7 +115,7 @@
   loop: "{{ s3_ssh_public_keys | default([]) }}"
 
 - name: copy ssh private keys from S3
-  copy:
+  ansible.builtin.copy:
     content: '{{ s3_ssh_keys_content[item.private_file]| b64decode }}'
     dest: "{{ (item.file | default('/home/' ~ item.user ~ '/.ssh/id_rsa')) }}"
     owner: "{{ item.owner | default(item.user) }}"

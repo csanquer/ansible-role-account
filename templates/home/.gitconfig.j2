@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+{% for item in item.value.gitconfig.includeifs|default([]) %}
+; include for all repositories inside {{ item.path }}
+[includeIf "gitdir:{{ item.path }}"]
+    path = {{ item.file }}
+
+{% endfor %}
+{% for item in skel_gitconfig|dict2items %}
+[{{ item.key }}]
+{%     for item2 in item.value|dict2items %}
+     {{ item2.key }} = {{ item2.value }}
+{%     endfor %}
+{% endfor %}
+
+{% for item in item.value.gitconfig.raw_config|default({})|dict2items %}
+[{{ item.key }}]
+{%     for item2 in item.value|dict2items %}
+     {{ item2.key }} = {{ item2.value }}
+{%     endfor %}
+{% endfor %}

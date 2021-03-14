@@ -1,6 +1,7 @@
 ---
 galaxy_info:
   author: Charles Sanquer
+  namespace: csanquer
   description: configure linux users, groups and ssh keys
   min_ansible_version: 2.6
   license: LGPLv3

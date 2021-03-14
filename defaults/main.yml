@@ -43,17 +43,28 @@ account_users: {}
   #     # -
   #     #   src: "{{ inventory_dir}}/templates/.my_custom_cfg.j2"
   #     #   dest: # default in /home/<username>/
-  #  color_prompt: yes # force terminal color prompt
-  #  ssh_agent_autostart: no # start ssh-agent session
-  #  gitconfig:
-  #     - { name: 'user.name', option: 'Martin Dupond'}
-  #     - { name: 'user.email', option: 'martin.dupond@example.com'}
-  #  bash_aliases:
+  #   color_prompt: yes # force terminal color prompt
+  #   ssh_agent_autostart: no # start ssh-agent session
+  #   gitconfig:
+  #     config:
+  #       - { name: 'user.name', option: 'Martin Dupond'}
+  #       - { name: 'user.email', option: 'martin.dupond@example.com'}
+  #     raw_config:
+  #       'mergetool "meld3"':
+  #         cmd: "$HOME/bin/meld3 $BASE $LOCAL $REMOTE $MERGED"
+  #     includeifs:
+  #         -
+  #           path: "~/git/pro/"
+  #           file: ".gitconfig-pro"
+  #           config:
+  #             user:
+  #                 email: martin.dupond@company.com'
+  #   bash_aliases:
   #     <alias>: <command>
-  #  # extra bash shell lines at the end of ~/.bashrc
-  #  bash_extra_lines: []
-  #  # extra zsh shell lines at the end of ~/.bashrc
-  #  zsh_extra_lines: []
+  #   # extra bash shell lines at the end of ~/.bashrc
+  #   bash_extra_lines: []
+  #   # extra zsh shell lines at the end of ~/.bashrc
+  #   zsh_extra_lines: []
 
 account_env_vars: {}
   # <username>:

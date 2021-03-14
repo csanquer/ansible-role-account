@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+{% for section in item.1.config|dict2items %}
+[{{ section.key }}]
+{%     for gitoption in section.value|dict2items %}
+     {{ gitoption.key }} = {{ gitoption.value }}
+{%     endfor %}
+{% endfor %}

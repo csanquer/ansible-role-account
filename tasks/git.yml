@@ -1,0 +1,39 @@
+---
+- name: create  main.gitconfig
+  ansible.builtin.template:
+    src: "home/.gitconfig.j2"
+    dest: "{{ item.value.home | default('/home/' ~ item.value.name) }}/.gitconfig"
+    owner: "{{ item.value.name }}"
+    group: "{{ item.value.group }}"
+    mode: "u=rw,g=r,o="
+    backup: "no"
+    force: "yes"
+  loop: "{{ account_users | dict2items }}"
+  loop_control:
+    label: "{{ item.value.home | default('/home/' ~ item.value.name) }}/.gitconfig"
+
+- name: create included .gitconfig files
+  ansible.builtin.template:
+    src: "home/.gitconfig_include.j2"
+    dest: "{{ item.0.home | default('/home/' ~ item.0.name) }}/{{ item.1.file }}"
+    owner: "{{ item.0.name }}"
+    group: "{{ item.0.group }}"
+    mode: "u=rw,g=r,o="
+    backup: "no"
+    force: "yes"
+  loop: "{{ account_users|subelements('gitconfig.includeifs', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.1.file }}"
+
+- name: set git configuration (.gitconfig)
+  community.general.git_config:
+    name: "{{ item.1.name }}"
+    value: "{{ item.1.option }}"
+    scope: "{{ item.1.scope|default('global') }}" # file scope currently bugged in community.general.git_config 2.0.0
+    file: "{{ item.1.file | default(omit) }}"
+    repo: "{{ item.1.repo | default(omit) }}"
+  become: true
+  become_user:  "{{ item.0.name }}"
+  loop: "{{ account_users|subelements('gitconfig.config', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.1.file | default('.gitconfig') }} -- {{ item.1.name }}"

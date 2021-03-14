@@ -22,6 +22,12 @@
   - account
   - user
 
+- include: git.yml
+  tags:
+  - account
+  - user
+  - gitconfig
+
 - include: ssh.yml
   tags:
   - account

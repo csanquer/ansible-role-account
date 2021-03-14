@@ -1,13 +1,15 @@
 ---
 - name: create sudoers.d files
-  template:
+  ansible.builtin.template:
     src: "etc/sudoers.j2"
     dest: "/etc/sudoers.d/{{ (item.prefix ~ '_') if item.prefix is defined and item.prefix else '' }}{{ item.sudogroup | default(item.sudouser) }}"
+    mode: 'u=r,g=r'
     validate: 'visudo -cf %s'
   loop: "{{ sudo_files }}"
 
 - name: copy sudoers file
-  template:
+  ansible.builtin.template:
     src: "etc/sudoers_{{ ansible_os_family | lower }}.j2"
     dest: "/etc/sudoers"
+    mode: 'u=r,g=r'
     validate: 'visudo -cf %s'
